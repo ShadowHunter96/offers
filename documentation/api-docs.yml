@@ -1,0 +1,437 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+paths:
+  /api/offers/{offerId}:
+    get:
+      tags:
+        - offer-controller
+      operationId: getOffer
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responpackage com.example.demo.service;
+
+import com.example.demo.dto.EmployeeDto;
+import com.example.demo.entity.Employee;
+import com.example.demo.exception.ApiException;
+import com.example.demo.exception.ErrorCode;
+import com.example.demo.repository.EmployeeRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Instant;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class EmployeeServiceImplTest {
+
+    @Mock
+    private EmployeeRepository employeeRepository;
+
+    @InjectMocks
+    private EmployeeServiceImpl employeeService;
+
+    @BeforeEach
+    void setUp() {
+        Mockito.reset(employeeRepository);
+    }
+
+    @Test
+    void create_shouldSaveEmployee_whenEmailNotExists() {
+        EmployeeDto dto = new EmployeeDto();
+        dto.setEmail("test@example.com");
+        dto.setFirstName("John");
+        dto.setLastName("Doe");
+        dto.setActive(true);
+
+        when(employeeRepository.findByEmail(dto.getEmail())).thenReturn(Optional.empty());
+
+        Employee entity = new Employee();
+        entity.setId(UUID.randomUUID());
+        entity.setEmail(dto.getEmail());
+        entity.setFirstName(dto.getFirstName());
+        entity.setLastName(dto.getLastName());
+        entity.setActive(true);
+        entity.setCreatedAt(Instant.now());
+        entity.setUpdatedAt(Instant.now());
+
+        // Mock mapper
+        try (MockedStatic<EmployeeMapper> mapper = mockStatic(EmployeeMapper.class)) {
+            mapper.when(() -> EmployeeMapper.toEntity(dto)).thenReturn(entity);
+            mapper.when(() -> EmployeeMapper.toDto(any(Employee.class))).thenReturn(dto);
+
+            when(employeeRepository.save(any(Employee.class))).thenReturn(entity);
+
+            EmployeeDto result = employeeService.create(dto);
+
+            assertNotNull(result);
+            assertEquals(dto.getEmail(), result.getEmail());
+            verify(employeeRepository).save(any(Employee.class));
+        }
+    }
+
+    @Test
+    void create_shouldThrow_whenEmailExists() {
+        EmployeeDto dto = new EmployeeDto();
+        dto.setEmail("test@example.com");
+
+        when(employeeRepository.findByEmail(dto.getEmail())).thenReturn(Optional.of(new Employee()));
+
+        ApiException ex = assertThrows(ApiException.class, () -> employeeService.create(dto));
+        assertEquals(ErrorCode.FIELD_INVALID, ex.getErrorCode());
+    }
+
+    @Test
+    void update_shouldUpdateEmployee_whenValid() {
+        UUID id = UUID.randomUUID();
+        EmployeeDto dto = new EmployeeDto();
+        dtses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OfferDto"
+    put:
+      tags:
+        - offer-controller
+      operationId: updateOffer
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfferDto"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OfferDto"
+    delete:
+      tags:
+        - offer-controller
+      operationId: deleteOffer
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/employee/{employeeId}:
+    put:
+      tags:
+        - employee-controller
+      operationId: updateEmployee
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeDto"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EmployeeDto"
+    delete:
+      tags:
+        - employee-controller
+      operationId: deactivateEmployee
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+  /api/offers:
+    get:
+      tags:
+        - offer-controller
+      operationId: listOffers
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OfferDto"
+    post:
+      tags:
+        - offer-controller
+      operationId: createOffer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfferDto"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OfferDto"
+  /api/offers/{offerId}/submit:
+    post:
+      tags:
+        - offer-controller
+      operationId: submitOffer
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OfferDto"
+  /api/offers/{offerId}/reject:
+    post:
+      tags:
+        - offer-controller
+      operationId: rejectOffer
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OfferDto"
+  /api/offers/{offerId}/cancel:
+    post:
+      tags:
+        - offer-controller
+      operationId: cancelOffer
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OfferDto"
+  /api/offers/{offerId}/accept:
+    post:
+      tags:
+        - offer-controller
+      operationId: acceptOffer
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OfferDto"
+  /api/employee:
+    get:
+      tags:
+        - employee-controller
+      operationId: listEmployees
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmployeeDto"
+    post:
+      tags:
+        - employee-controller
+      operationId: createEmployee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeDto"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EmployeeDto"
+  /api/employee/lastName/{lastName}:
+    get:
+      tags:
+        - employee-controller
+      operationId: getEmployeeByLastName
+      parameters:
+        - name: lastName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EmployeeDto"
+  /api/employee/id/{employeeId}:
+    get:
+      tags:
+        - employee-controller
+      operationId: getEmployeeById
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EmployeeDto"
+  /api/employee/firstName/{firstName}:
+    get:
+      tags:
+        - employee-controller
+      operationId: getEmployeeByFirstName
+      parameters:
+        - name: firstName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EmployeeDto"
+components:
+  schemas:
+    OfferDto:
+      required:
+        - currency
+        - priceTotal
+        - title
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        offerNumber:
+          type: string
+        customerId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        currency:
+          type: string
+        priceTotal:
+          type: number
+        validUntil:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - SUBMITTED
+            - ACCEPTED
+            - REJECTED
+            - CANCELLED
+    EmployeeDto:
+      required:
+        - email
+        - firstName
+        - lastName
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        hourlyRate:
+          type: number
+        active:
+          type: boolean
