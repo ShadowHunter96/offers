@@ -6,8 +6,7 @@ package com.example.demo.dto;
  * Time: 12:23
  */
 import com.example.demo.enums.OfferStatus;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,23 +26,32 @@ public class OfferDto {
 
     private String offerNumber;
 
+    @NotNull(message = "Customer ID is required")
     private UUID customerId;
 
-    @NotBlank
+    @NotBlank(message = "Title is required")
+    @Size(min = 3, max = 255, message = "Title must be between 3 and 255 characters")
     private String title;
 
+    @Size(max = 2000, message = "Description must not exceed 2000 characters")
     private String description;
 
-    @NotBlank
+    @NotBlank(message = "Currency is required")
+    @Size(min = 3, max = 3, message = "Currency code must be 3 characters")
+    @Pattern(regexp = "[A-Z]{3}", message = "Currency must be a valid 3-letter ISO 4217 code (e.g., USD, EUR, CZK)")
     private String currency;
 
-    @NotNull
+    @NotNull(message = "Price total is required")
+    @Positive(message = "Price total must be greater than 0")
+    @DecimalMax(value = "999999999.99", message = "Price total must not exceed 999999999.99")
     private BigDecimal priceTotal;
 
+    @FutureOrPresent(message = "Validity date must be today or in the future")
     private LocalDate validUntil;
 
     private OfferStatus status;
 
 
 }
+
 

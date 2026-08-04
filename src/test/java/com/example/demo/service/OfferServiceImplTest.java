@@ -91,6 +91,7 @@ class OfferServiceImplTest {
         updateDto.setTitle("Updated Title");
         updateDto.setCurrency("EUR");
         updateDto.setPriceTotal(BigDecimal.valueOf(2000.00));
+        updateDto.setCustomerId(UUID.randomUUID());
 
         OfferDto result = offerService.update(testOfferId, updateDto);
 
@@ -108,6 +109,9 @@ class OfferServiceImplTest {
 
         OfferDto updateDto = new OfferDto();
         updateDto.setTitle("Updated Title");
+        updateDto.setCurrency("EUR");
+        updateDto.setPriceTotal(BigDecimal.valueOf(2000.00));
+        updateDto.setCustomerId(UUID.randomUUID());
 
         OfferDto result = offerService.update(testOfferId, updateDto);
 
@@ -123,6 +127,9 @@ class OfferServiceImplTest {
 
         OfferDto updateDto = new OfferDto();
         updateDto.setTitle("Updated Title");
+        updateDto.setCurrency("EUR");
+        updateDto.setPriceTotal(BigDecimal.valueOf(2000.00));
+        updateDto.setCustomerId(UUID.randomUUID());
 
         assertThrows(BusinessRuleViolationException.class, () ->
             offerService.update(testOfferId, updateDto)
@@ -139,6 +146,9 @@ class OfferServiceImplTest {
 
         OfferDto updateDto = new OfferDto();
         updateDto.setTitle("Updated Title");
+        updateDto.setCurrency("EUR");
+        updateDto.setPriceTotal(BigDecimal.valueOf(2000.00));
+        updateDto.setCustomerId(UUID.randomUUID());
 
         assertThrows(BusinessRuleViolationException.class, () ->
             offerService.update(testOfferId, updateDto)
@@ -153,6 +163,9 @@ class OfferServiceImplTest {
 
         OfferDto updateDto = new OfferDto();
         updateDto.setTitle("Updated Title");
+        updateDto.setCurrency("EUR");
+        updateDto.setPriceTotal(BigDecimal.valueOf(2000.00));
+        updateDto.setCustomerId(UUID.randomUUID());
 
         assertThrows(BusinessRuleViolationException.class, () ->
             offerService.update(testOfferId, updateDto)
@@ -166,6 +179,9 @@ class OfferServiceImplTest {
 
         OfferDto updateDto = new OfferDto();
         updateDto.setTitle("Updated Title");
+        updateDto.setCurrency("EUR");
+        updateDto.setPriceTotal(BigDecimal.valueOf(2000.00));
+        updateDto.setCustomerId(UUID.randomUUID());
 
         assertThrows(ResourceNotFoundException.class, () ->
             offerService.update(testOfferId, updateDto)

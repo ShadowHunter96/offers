@@ -16,6 +16,7 @@ import com.example.demo.repository.OfferRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,6 +34,8 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public OfferDto create(OfferDto dto) {
+        validateOfferDto(dto);
+        
         Offer offer = OfferMapper.toEntity(dto);
 
         offer.setId(UUID.randomUUID());
@@ -49,6 +52,8 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public OfferDto update(UUID offerId, OfferDto dto) {
+        validateOfferDto(dto);
+        
         Offer existing = getExisting(offerId);
 
         if (!isEditable(existing.getStatus())) {
@@ -68,6 +73,9 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public OfferDto getById(UUID offerId) {
+        if (offerId == null) {
+            throw new IllegalArgumentException("Offer ID cannot be null");
+        }
         return OfferMapper.toDto(getExisting(offerId));
     }
 
@@ -81,6 +89,10 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public void delete(UUID offerId) {
+        if (offerId == null) {
+            throw new IllegalArgumentException("Offer ID cannot be null");
+        }
+        
         Offer existing = getExisting(offerId);
 
         if (existing.getStatus() != OfferStatus.DRAFT) {
@@ -92,6 +104,10 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public OfferDto submit(UUID offerId) {
+        if (offerId == null) {
+            throw new IllegalArgumentException("Offer ID cannot be null");
+        }
+        
         Offer existing = getExisting(offerId);
 
         if (existing.getStatus() != OfferStatus.DRAFT) {
@@ -106,6 +122,10 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public OfferDto accept(UUID offerId) {
+        if (offerId == null) {
+            throw new IllegalArgumentException("Offer ID cannot be null");
+        }
+        
         Offer existing = getExisting(offerId);
 
         if (existing.getStatus() != OfferStatus.SUBMITTED) {
@@ -120,6 +140,10 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public OfferDto reject(UUID offerId) {
+        if (offerId == null) {
+            throw new IllegalArgumentException("Offer ID cannot be null");
+        }
+        
         Offer existing = getExisting(offerId);
 
         if (existing.getStatus() != OfferStatus.SUBMITTED) {
@@ -134,6 +158,10 @@ public class OfferServiceImpl implements OfferService {
 
     @Override
     public OfferDto cancel(UUID offerId) {
+        if (offerId == null) {
+            throw new IllegalArgumentException("Offer ID cannot be null");
+        }
+        
         Offer existing = getExisting(offerId);
 
         if (isTerminal(existing.getStatus())) {
@@ -161,5 +189,55 @@ public class OfferServiceImpl implements OfferService {
     private boolean isTerminal(OfferStatus status) {
         return status == OfferStatus.REJECTED || status == OfferStatus.CANCELLED;
     }
+
+    /**
+     * Validate offer DTO fields.
+     */
+    private void validateOfferDto(OfferDto dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Offer data cannot be null");
+        }
+
+        // Only validate customerId if provided (for updates, it's optional)
+        if (dto.getCustomerId() == null) {
+            throw new IllegalArgumentException("Customer ID is required");
+        }
+
+        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
+            throw new IllegalArgumentException("Title is required");
+        }
+
+        if (dto.getTitle().length() < 3 || dto.getTitle().length() > 255) {
+            throw new IllegalArgumentException("Title must be between 3 and 255 characters");
+        }
+
+        if (dto.getCurrency() == null || dto.getCurrency().isBlank()) {
+            throw new IllegalArgumentException("Currency is required");
+        }
+
+        if (!dto.getCurrency().matches("[A-Z]{3}")) {
+            throw new IllegalArgumentException("Currency must be a valid 3-letter ISO 4217 code");
+        }
+
+        if (dto.getPriceTotal() == null) {
+            throw new IllegalArgumentException("Price total is required");
+        }
+
+        if (dto.getPriceTotal().signum() <= 0) {
+            throw new IllegalArgumentException("Price total must be greater than 0");
+        }
+
+        if (dto.getValidUntil() != null && dto.getValidUntil().isBefore(LocalDate.now())) {
+            throw new BusinessRuleViolationException(
+                    "offer.validUntil",
+                    "Validity date must not be in the past"
+            );
+        }
+
+        if (dto.getDescription() != null && dto.getDescription().length() > 2000) {
+            throw new IllegalArgumentException("Description must not exceed 2000 characters");
+        }
+    }
 }
+
 

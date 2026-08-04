@@ -187,6 +187,8 @@ class EmployeeServiceImplTest {
         when(employeeRepository.findByEmail("other.email@example.com")).thenReturn(Optional.of(otherEmployee));
 
         EmployeeDto updateDto = new EmployeeDto();
+        updateDto.setFirstName("John");
+        updateDto.setLastName("Doe");
         updateDto.setEmail("other.email@example.com");
 
         assertThrows(ApiException.class, () ->
@@ -203,6 +205,8 @@ class EmployeeServiceImplTest {
 
         EmployeeDto updateDto = new EmployeeDto();
         updateDto.setFirstName("Johnny");
+        updateDto.setLastName("Doe");
+        updateDto.setEmail("johnny.doe@example.com");
 
         assertThrows(ApiException.class, () ->
             employeeService.update(testEmployeeId, updateDto)
