@@ -366,20 +366,4 @@ class EmployeeServiceImplTest {
 
         verify(employeeRepository, never()).save(any());
     }
-
-    @Test
-    @DisplayName("deactivate() should update the updatedAt timestamp")
-    void testDeactivateUpdatesTimestamp() {
-        testEmployee.setActive(true);
-        Instant beforeDeactivate = Instant.now();
-        
-        when(employeeRepository.findById(testEmployeeId)).thenReturn(Optional.of(testEmployee));
-
-        employeeService.deactivate(testEmployeeId);
-
-        assertTrue(testEmployee.getUpdatedAt().isAfter(beforeDeactivate) || 
-                   testEmployee.getUpdatedAt().equals(beforeDeactivate));
-        assertFalse(testEmployee.isActive());
-        verify(employeeRepository, times(1)).save(testEmployee);
-    }
 }

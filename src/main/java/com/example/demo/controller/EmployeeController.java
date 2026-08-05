@@ -13,7 +13,7 @@ import java.util.UUID;
  * REST controller for managing employees.
  */
 @RestController
-@RequestMapping("/api/employee")
+@RequestMapping("/api/employees")
 public class EmployeeController {
 
     private final EmployeeService employeeService;

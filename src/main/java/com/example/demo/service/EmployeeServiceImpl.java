@@ -41,10 +41,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         });
 
         Employee employee = EmployeeMapper.toEntity(dto);
-        employee.setId(UUID.randomUUID());
         employee.setActive(dto.getActive() == null || dto.getActive());
-        employee.setCreatedAt(Instant.now());
-        employee.setUpdatedAt(Instant.now());
+
+        employee.setId(null);
+
 
         Employee saved = employeeRepository.save(employee);
         return EmployeeMapper.toDto(saved);
@@ -80,8 +80,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (dto.getActive() != null) {
             existing.setActive(dto.getActive());
         }
-
-        existing.setUpdatedAt(Instant.now());
 
         Employee saved = employeeRepository.save(existing);
         return EmployeeMapper.toDto(saved);
@@ -139,7 +137,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (employee.isActive()) {
             employee.setActive(false);
-            employee.setUpdatedAt(Instant.now());
             employeeRepository.save(employee);
         }
     }
