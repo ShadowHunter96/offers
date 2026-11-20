@@ -37,7 +37,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         validateEmployeeDto(dto);
         
         employeeRepository.findByEmail(dto.getEmail()).ifPresent(existing -> {
-            throw new ApiException(ErrorCode.FIELD_INVALID, "employee.email", "Employee with given email already exists.");
+            throw new ApiException(ErrorCode.RESOURCE_CONFLICT, "employee.email", "Employee with given email already exists.");
         });
 
         Employee employee = EmployeeMapper.toEntity(dto);

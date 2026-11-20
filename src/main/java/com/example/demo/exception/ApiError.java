@@ -7,24 +7,14 @@ package com.example.demo.exception;
  */
 public class ApiError {
 
-    private String code;
     private String scope;
     private String message;
     private ErrorCode errorCode;
-
-    public ApiError(String code, String scope) {
-        this.code = code;
-        this.scope = scope;
-    }
 
     public ApiError(String scope, String message, ErrorCode errorCode) {
         this.scope = scope;
         this.message = message;
         this.errorCode = errorCode;
-    }
-
-    public String getCode() {
-        return code;
     }
 
     public String getScope() {

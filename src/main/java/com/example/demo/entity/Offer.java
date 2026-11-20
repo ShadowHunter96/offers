@@ -61,8 +61,8 @@ public class Offer {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal priceTotal;
 
-    @Future(message = "Validity date must be in the future")
-    @Column(nullable = false)
+    @FutureOrPresent(message = "Validity date must be today or in the future")
+    @Column
     private LocalDate validUntil;
 
     @Enumerated(EnumType.STRING)

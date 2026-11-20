@@ -10,7 +10,6 @@ import com.example.demo.dto.EmployeeDto;
 import com.example.demo.entity.Employee;
 
 import java.time.Instant;
-import java.util.UUID;
 
 public final class EmployeeMapper {
 
@@ -19,7 +18,7 @@ public final class EmployeeMapper {
 
     public static Employee toEntity(EmployeeDto dto) {
         Employee employee = new Employee();
-        employee.setId(dto.getId() != null ? dto.getId() : UUID.randomUUID());
+        employee.setId(dto.getId());
         employee.setFirstName(dto.getFirstName());
         employee.setLastName(dto.getLastName());
         employee.setEmail(dto.getEmail());
