@@ -1,0 +1,262 @@
+{
+  "info": {
+    "name": "Offers API - functional tests",
+    "_postman_id": "9d9a6f0e-5d2c-4a7e-9b1f-offers-api-bp-2026",
+    "description": "Functional and negative tests of the Offers REST API (bachelor thesis demo application). Run with Postman or Newman: newman run postman/offers-api.postman_collection.json -e postman/local.postman_environment.json",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "offerId", "value": "" },
+    { "key": "employeeId", "value": "" },
+    { "key": "employeeEmail", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Offers",
+      "item": [
+        {
+          "name": "01 Create offer (201, DRAFT)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": { "type": "text/javascript", "exec": [
+                "const d = new Date(); d.setDate(d.getDate() + 30);",
+                "pm.collectionVariables.set('validUntil', d.toISOString().substring(0, 10));",
+                "pm.collectionVariables.set('customerId', pm.variables.replaceIn('{{$guid}}'));"
+              ] }
+            },
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.test('Status code is 201 Created', () => pm.response.to.have.status(201));",
+                "pm.test('Response is JSON', () => pm.response.to.be.json);",
+                "const body = pm.response.json();",
+                "pm.test('Offer has id and offer number OFF-YYYY-NNNN', () => {",
+                "  pm.expect(body.id).to.be.a('string');",
+                "  pm.expect(body.offerNumber).to.match(/^OFF-\\d{4}-\\d{4}$/);",
+                "});",
+                "pm.test('New offer is in DRAFT status', () => pm.expect(body.status).to.eql('DRAFT'));",
+                "pm.test('Response time is below 1000 ms', () => pm.expect(pm.response.responseTime).to.be.below(1000));",
+                "pm.collectionVariables.set('offerId', body.id);"
+              ] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"title\": \"Postman offer\",\n  \"description\": \"Created from Postman collection\",\n  \"currency\": \"EUR\",\n  \"priceTotal\": 4200.00,\n  \"validUntil\": \"{{validUntil}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/offers", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers" ] }
+          }
+        },
+        {
+          "name": "02 Get offer by id (200)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('Returned offer matches created one', () => {",
+            "  pm.expect(body.id).to.eql(pm.collectionVariables.get('offerId'));",
+            "  pm.expect(body.title).to.eql('Postman offer');",
+            "  pm.expect(body.currency).to.eql('EUR');",
+            "});"
+          ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/offers/{{offerId}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers", "{{offerId}}" ] } }
+        },
+        {
+          "name": "03 Update offer (200)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('Title and price were updated, status unchanged', () => {",
+            "  pm.expect(body.title).to.eql('Postman offer - updated');",
+            "  pm.expect(body.priceTotal).to.eql(4500);",
+            "  pm.expect(body.status).to.eql('DRAFT');",
+            "});"
+          ] } } ],
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"title\": \"Postman offer - updated\",\n  \"description\": \"Updated from Postman collection\",\n  \"currency\": \"EUR\",\n  \"priceTotal\": 4500.00,\n  \"validUntil\": \"{{validUntil}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/offers/{{offerId}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers", "{{offerId}}" ] }
+          }
+        },
+        {
+          "name": "04 Accept DRAFT offer (409 - business rule)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 409 Conflict', () => pm.response.to.have.status(409));",
+            "const body = pm.response.json();",
+            "pm.test('Error payload describes the business rule', () => {",
+            "  pm.expect(body.status).to.eql(409);",
+            "  pm.expect(body.errors[0].errorCode).to.eql('BUSINESS_RULE_VIOLATION');",
+            "  pm.expect(body.errors[0].scope).to.eql('offer.status');",
+            "});"
+          ] } } ],
+          "request": { "method": "POST", "header": [], "url": { "raw": "{{baseUrl}}/api/offers/{{offerId}}/accept", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers", "{{offerId}}", "accept" ] } }
+        },
+        {
+          "name": "05 Submit offer (200, SUBMITTED)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Status changed to SUBMITTED', () => pm.expect(pm.response.json().status).to.eql('SUBMITTED'));"
+          ] } } ],
+          "request": { "method": "POST", "header": [], "url": { "raw": "{{baseUrl}}/api/offers/{{offerId}}/submit", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers", "{{offerId}}", "submit" ] } }
+        },
+        {
+          "name": "06 Delete SUBMITTED offer (409)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 409 Conflict', () => pm.response.to.have.status(409));",
+            "pm.test('Only DRAFT offers can be deleted', () => pm.expect(pm.response.json().errors[0].message).to.include('DRAFT'));"
+          ] } } ],
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/offers/{{offerId}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers", "{{offerId}}" ] } }
+        },
+        {
+          "name": "07 Accept offer (200, ACCEPTED)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Status changed to ACCEPTED', () => pm.expect(pm.response.json().status).to.eql('ACCEPTED'));"
+          ] } } ],
+          "request": { "method": "POST", "header": [], "url": { "raw": "{{baseUrl}}/api/offers/{{offerId}}/accept", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers", "{{offerId}}", "accept" ] } }
+        },
+        {
+          "name": "08 List offers (200, array contains offer)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('Response is a non-empty array containing the offer', () => {",
+            "  pm.expect(body).to.be.an('array').that.is.not.empty;",
+            "  pm.expect(body.map(o => o.id)).to.include(pm.collectionVariables.get('offerId'));",
+            "});"
+          ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/offers", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers" ] } }
+        },
+        {
+          "name": "09 Create offer with invalid data (400)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 400 Bad Request', () => pm.response.to.have.status(400));",
+            "const body = pm.response.json();",
+            "pm.test('Every invalid field is reported', () => {",
+            "  const scopes = body.errors.map(e => e.scope);",
+            "  pm.expect(scopes).to.include.members(['customerId', 'title', 'currency', 'priceTotal']);",
+            "  body.errors.forEach(e => pm.expect(e.errorCode).to.eql('FIELD_INVALID'));",
+            "});"
+          ] } } ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"ab\",\n  \"currency\": \"eur\",\n  \"priceTotal\": -1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/offers", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers" ] }
+          }
+        },
+        {
+          "name": "10 Get offer with invalid UUID (400)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('Error names the offending parameter', () => pm.expect(pm.response.json().errors[0].scope).to.eql('offerId'));"
+          ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/offers/not-a-uuid", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers", "not-a-uuid" ] } }
+        },
+        {
+          "name": "11 Get unknown offer (404)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 404 Not Found', () => pm.response.to.have.status(404));",
+            "pm.test('Error code is RESOURCE_NOT_FOUND', () => pm.expect(pm.response.json().errors[0].errorCode).to.eql('RESOURCE_NOT_FOUND'));"
+          ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/offers/00000000-0000-0000-0000-000000000000", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers", "00000000-0000-0000-0000-000000000000" ] } }
+        },
+        {
+          "name": "12 Unsupported method PATCH (405)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 405 Method Not Allowed', () => pm.response.to.have.status(405));"
+          ] } } ],
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/api/offers/{{offerId}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "offers", "{{offerId}}" ] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "13 Create employee (201)",
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+              "pm.collectionVariables.set('employeeEmail', 'postman.' + Date.now() + '@example.com');"
+            ] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "pm.test('Status code is 201 Created', () => pm.response.to.have.status(201));",
+              "const body = pm.response.json();",
+              "pm.test('Employee is active and has an id', () => {",
+              "  pm.expect(body.id).to.be.a('string');",
+              "  pm.expect(body.active).to.eql(true);",
+              "});",
+              "pm.collectionVariables.set('employeeId', body.id);"
+            ] } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Eva\",\n  \"lastName\": \"Postmanová\",\n  \"email\": \"{{employeeEmail}}\",\n  \"role\": \"QA Engineer\",\n  \"hourlyRate\": 700\n}" },
+            "url": { "raw": "{{baseUrl}}/api/employees", "host": [ "{{baseUrl}}" ], "path": [ "api", "employees" ] }
+          }
+        },
+        {
+          "name": "14 Create employee with duplicate e-mail (409)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 409 Conflict', () => pm.response.to.have.status(409));",
+            "pm.test('Conflict is reported on employee.email', () => {",
+            "  const err = pm.response.json().errors[0];",
+            "  pm.expect(err.scope).to.eql('employee.email');",
+            "  pm.expect(err.errorCode).to.eql('RESOURCE_CONFLICT');",
+            "});"
+          ] } } ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Jiná\",\n  \"lastName\": \"Osoba\",\n  \"email\": \"{{employeeEmail}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/employees", "host": [ "{{baseUrl}}" ], "path": [ "api", "employees" ] }
+          }
+        },
+        {
+          "name": "15 Get employee by id (200)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+            "pm.test('E-mail matches', () => pm.expect(pm.response.json().email).to.eql(pm.collectionVariables.get('employeeEmail')));"
+          ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/employees/id/{{employeeId}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "employees", "id", "{{employeeId}}" ] } }
+        },
+        {
+          "name": "16 Create employee with invalid e-mail (400)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 400 Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('email field is reported as invalid', () => pm.expect(pm.response.json().errors.map(e => e.scope)).to.include('email'));"
+          ] } } ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Eva\",\n  \"lastName\": \"Chybná\",\n  \"email\": \"not-an-email\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/employees", "host": [ "{{baseUrl}}" ], "path": [ "api", "employees" ] }
+          }
+        },
+        {
+          "name": "17 Deactivate employee (204)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 204 No Content', () => pm.response.to.have.status(204));",
+            "pm.test('Body is empty', () => pm.expect(pm.response.text()).to.eql(''));"
+          ] } } ],
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/employees/{{employeeId}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "employees", "{{employeeId}}" ] } }
+        },
+        {
+          "name": "18 Deactivated employee is still readable, active=false (200)",
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+            "pm.test('Employee is inactive (soft delete)', () => pm.expect(pm.response.json().active).to.eql(false));"
+          ] } } ],
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/employees/id/{{employeeId}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "employees", "id", "{{employeeId}}" ] } }
+        }
+      ]
+    }
+  ]
+}
