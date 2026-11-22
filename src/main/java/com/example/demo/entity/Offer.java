@@ -61,7 +61,9 @@ public class Offer {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal priceTotal;
 
-    @FutureOrPresent(message = "Validity date must be today or in the future")
+    // No @FutureOrPresent here: the rule applies to client input (OfferDto) only.
+    // On the entity it would be re-checked on every UPDATE and block state
+    // transitions (cancel/reject/...) of offers whose validity has already expired.
     @Column
     private LocalDate validUntil;
 

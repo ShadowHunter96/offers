@@ -19,24 +19,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -61,24 +43,6 @@ paths:
               $ref: "#/components/schemas/OfferDto"
         required: true
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -97,24 +61,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "204":
           description: No Content
   /api/employees/{employeeId}:
@@ -136,24 +82,6 @@ paths:
               $ref: "#/components/schemas/EmployeeDto"
         required: true
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -172,24 +100,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "204":
           description: No Content
   /api/offers:
@@ -198,24 +108,6 @@ paths:
       - offer-controller
       operationId: listOffers
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -235,24 +127,6 @@ paths:
               $ref: "#/components/schemas/OfferDto"
         required: true
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "201":
           description: Created
           content:
@@ -272,24 +146,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -309,24 +165,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -346,24 +184,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -383,24 +203,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -413,24 +215,6 @@ paths:
       - employee-controller
       operationId: listEmployees
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -450,24 +234,6 @@ paths:
               $ref: "#/components/schemas/EmployeeDto"
         required: true
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "201":
           description: Created
           content:
@@ -486,24 +252,6 @@ paths:
         schema:
           type: string
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -523,24 +271,6 @@ paths:
           type: string
           format: uuid
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -559,24 +289,6 @@ paths:
         schema:
           type: string
       responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ApiErrorResponse"
         "200":
           description: OK
           content:
@@ -585,39 +297,6 @@ paths:
                 $ref: "#/components/schemas/EmployeeDto"
 components:
   schemas:
-    ApiError:
-      type: object
-      properties:
-        code:
-          type: string
-        scope:
-          type: string
-        message:
-          type: string
-        errorCode:
-          type: string
-          enum:
-          - FIELD_INVALID
-          - RESOURCE_NOT_FOUND
-          - RESOURCE_CONFLICT
-          - BUSINESS_RULE_VIOLATION
-    ApiErrorResponse:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int32
-        message:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        path:
-          type: string
-        errors:
-          type: array
-          items:
-            $ref: "#/components/schemas/ApiError"
     OfferDto:
       type: object
       properties:

@@ -1,5 +1,8 @@
 package com.example.demo.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -16,12 +19,17 @@ import java.util.List;
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<Object> handleApiException(ApiException exception, WebRequest request) {
         HttpStatus status = switch (exception.getCode()) {
             case RESOURCE_NOT_FOUND -> HttpStatus.NOT_FOUND;
             case RESOURCE_CONFLICT, BUSINESS_RULE_VIOLATION -> HttpStatus.CONFLICT;
             case FIELD_INVALID -> HttpStatus.BAD_REQUEST;
+            case INTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
+            case AUTHENTICATION_REQUIRED -> HttpStatus.UNAUTHORIZED;
+            case ACCESS_DENIED -> HttpStatus.FORBIDDEN;
         };
         return response(status, new HttpHeaders(), request,
                 List.of(new ApiError(exception.getScope(), exception.getMessage(), exception.getCode())));
@@ -40,6 +48,29 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                                                          WebRequest request) {
         return response(HttpStatus.BAD_REQUEST, new HttpHeaders(), request,
                 List.of(new ApiError("request", exception.getMessage(), ErrorCode.FIELD_INVALID)));
+    }
+
+    /**
+     * Database constraint violated despite service-level checks (e.g. two concurrent
+     * requests creating the same e-mail) - reported as a conflict, not as a server error.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrity(DataIntegrityViolationException exception,
+                                                      WebRequest request) {
+        return response(HttpStatus.CONFLICT, new HttpHeaders(), request,
+                List.of(new ApiError("request", "Request conflicts with existing data.",
+                        ErrorCode.RESOURCE_CONFLICT)));
+    }
+
+    /**
+     * Fallback for unexpected errors: keeps the unified ApiErrorResponse structure
+     * and does not expose internal details (stack trace, exception message) to the client.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleUnexpected(Exception exception, WebRequest request) {
+        log.error("Unexpected error while processing {}", request.getDescription(false), exception);
+        return response(HttpStatus.INTERNAL_SERVER_ERROR, new HttpHeaders(), request,
+                List.of(new ApiError("request", "Unexpected server error.", ErrorCode.INTERNAL_ERROR)));
     }
 
     @Override

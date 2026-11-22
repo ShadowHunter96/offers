@@ -11,8 +11,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
@@ -31,6 +33,9 @@ class ApiIntegrationTest {
 
     @Autowired
     private OfferRepository offerRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
     void clearDatabase() {
@@ -214,13 +219,53 @@ class ApiIntegrationTest {
     }
 
     @Test
+    void cancelsOfferWhoseValidityHasAlreadyExpired() {
+        String offerId = request().body(offerJson().replace("\"priceTotal\":123.45",
+                        "\"priceTotal\":123.45, \"validUntil\":\"" + LocalDate.now() + "\""))
+                .post("/api/offers").then().statusCode(201).extract().jsonPath().getString("id");
+        // simulate the passage of time: validity ended yesterday
+        jdbcTemplate.update("update offers set valid_until = ? where id = ?",
+                LocalDate.now().minusDays(1), UUID.fromString(offerId));
+
+        transition(offerId, "cancel", "CANCELLED");
+    }
+
+    @Test
     void rejectsMalformedJson() {
         request().body("{invalid").post("/api/offers").then().statusCode(400);
         assertEquals(0, offerRepository.count());
     }
 
-    private RequestSpecification request() {
+    @Test
+    void rejectsRequestWithoutCredentials() {
+        anonymous().get("/api/offers").then().statusCode(401)
+                .header("WWW-Authenticate", containsString("Basic"))
+                .body("errors.errorCode", hasItem("AUTHENTICATION_REQUIRED"));
+    }
+
+    @Test
+    void rejectsWrongPassword() {
+        anonymous().auth().preemptive().basic("manager", "wrong-password")
+                .get("/api/offers").then().statusCode(401);
+    }
+
+    @Test
+    void viewerCanReadButCannotChangeData() {
+        createOffer();
+        anonymous().auth().preemptive().basic("viewer", "viewer123")
+                .get("/api/offers").then().statusCode(200).body("size()", equalTo(1));
+        anonymous().auth().preemptive().basic("viewer", "viewer123").body(offerJson())
+                .post("/api/offers").then().statusCode(403)
+                .body("errors.errorCode", hasItem("ACCESS_DENIED"));
+        assertEquals(1, offerRepository.count());
+    }
+
+    private RequestSpecification anonymous() {
         return given().baseUri("http://localhost").port(port).contentType("application/json");
+    }
+
+    private RequestSpecification request() {
+        return anonymous().auth().preemptive().basic("manager", "manager123");
     }
 
     private Response createEmployee() {

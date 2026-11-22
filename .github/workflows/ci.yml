@@ -7,9 +7,12 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
-    name: Build, unit/integration/E2E tests, coverage
+    name: Build, unit/MockMvc/integration tests, coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -23,9 +26,8 @@ jobs:
           java-version: '21'
           cache: maven
 
-      # Compiles, runs JUnit 5 + Mockito unit tests, @WebMvcTest controller tests,
-      # @SpringBootTest integration tests and REST Assured E2E tests (H2, profile "test"),
-      # then generates the JaCoCo coverage report.
+      # JUnit 5 + Mockito unit tests, @WebMvcTest (MockMvc) controller tests,
+      # @SpringBootTest + REST Assured HTTP integration tests (H2, profile "test"), JaCoCo report
       - name: Build and run all automated tests
         run: mvn -B --no-transfer-progress verify
 
@@ -62,21 +64,28 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Package application
         run: mvn -B --no-transfer-progress -DskipTests package
 
-      - name: Start application with in-memory H2 (profile test)
+      # profile "h2" (src/main/resources/application-h2.properties) runs the JAR without PostgreSQL
+      - name: Start application with in-memory H2
         run: |
-          nohup java -jar target/demo-0.0.1-SNAPSHOT.jar --spring.profiles.active=test > app.log 2>&1 &
-          for i in $(seq 1 30); do
-            if curl -fs http://localhost:8080/api/offers > /dev/null; then echo "Application is up"; break; fi
+          nohup java -jar target/demo-0.0.1-SNAPSHOT.jar --spring.profiles.active=h2 > app.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fs http://localhost:8080/v3/api-docs > /dev/null; then echo "Application is up"; exit 0; fi
             sleep 2
           done
+          echo "Application did not start"; cat app.log; exit 1
 
       - name: Run Postman collection with Newman
-        run: npx --yes newman run postman/offers-api.postman_collection.json -e postman/local.postman_environment.json --reporters cli,junit --reporter-junit-export newman-report.xml
+        run: >
+          npx --yes newman@6.2.1 run postman/offers-api.postman_collection.json
+          -e postman/local.postman_environment.json
+          --reporters cli,junit,json
+          --reporter-junit-export newman-report.xml
+          --reporter-json-export newman-report.json
 
       - name: Upload Newman report
         if: always()
@@ -85,4 +94,5 @@ jobs:
           name: newman-report
           path: |
             newman-report.xml
+            newman-report.json
             app.log
